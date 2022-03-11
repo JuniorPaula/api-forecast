@@ -1,4 +1,5 @@
 import { ForecastPoint, StormGlass } from '@src/clients/stormGlass';
+import { InternalError } from '@src/utils/errors/internal-error';
 
 export enum BeachPosition {
   N = 'N',
@@ -22,6 +23,12 @@ export interface ITimeForecast {
   forecast: IBeachForecast[];
 }
 
+export class IForecastProcessingInternalError extends InternalError {
+  constructor(message: string) {
+    super(`Unexperted error during forecast process request: ${message}`);
+  }
+}
+
 export class Forecast {
   constructor(protected stormGlass = new StormGlass()) {}
 
@@ -29,23 +36,34 @@ export class Forecast {
     beaches: IBeach[]
   ): Promise<ITimeForecast[]> {
     const poitsWithCorrectSources: IBeachForecast[] = [];
-    for (const beach of beaches) {
-      const points = await this.stormGlass.fetchPoints(beach.lat, beach.lng);
-      const enrichedBeachData = points.map((e) => ({
-        ...{
-          lat: beach.lat,
-          lng: beach.lng,
-          name: beach.name,
-          position: beach.position,
-          rating: 1,
-        },
-        ...e,
-      }));
+    try {
+      for (const beach of beaches) {
+        const points = await this.stormGlass.fetchPoints(beach.lat, beach.lng);
+        const enrichedBeachData = this.enrichedBeachData(points, beach);
 
-      poitsWithCorrectSources.push(...enrichedBeachData);
+        poitsWithCorrectSources.push(...enrichedBeachData);
+      }
+
+      return this.mapForecastByTime(poitsWithCorrectSources);
+    } catch (error) {
+      throw new IForecastProcessingInternalError((error as Error).message);
     }
+  }
 
-    return this.mapForecastByTime(poitsWithCorrectSources);
+  private enrichedBeachData(
+    points: ForecastPoint[],
+    beach: IBeach
+  ): IBeachForecast[] {
+    return points.map((e) => ({
+      ...{
+        lat: beach.lat,
+        lng: beach.lng,
+        name: beach.name,
+        position: beach.position,
+        rating: 1,
+      },
+      ...e,
+    }));
   }
 
   private mapForecastByTime(forecast: IBeachForecast[]): ITimeForecast[] {
