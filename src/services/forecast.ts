@@ -17,12 +17,17 @@ export interface IBeach {
 
 export interface IBeachForecast extends Omit<IBeach, 'user'>, ForecastPoint {}
 
+export interface ITimeForecast {
+  time: string;
+  forecast: IBeachForecast[];
+}
+
 export class Forecast {
   constructor(protected stormGlass = new StormGlass()) {}
 
   public async processForecastForBeaches(
     beaches: IBeach[]
-  ): Promise<IBeachForecast[]> {
+  ): Promise<ITimeForecast[]> {
     const poitsWithCorrectSources: IBeachForecast[] = [];
     for (const beach of beaches) {
       const points = await this.stormGlass.fetchPoints(beach.lat, beach.lng);
@@ -40,6 +45,24 @@ export class Forecast {
       poitsWithCorrectSources.push(...enrichedBeachData);
     }
 
-    return poitsWithCorrectSources;
+    return this.mapForecastByTime(poitsWithCorrectSources);
+  }
+
+  private mapForecastByTime(forecast: IBeachForecast[]): ITimeForecast[] {
+    const forecastByTime: ITimeForecast[] = [];
+
+    for (const point of forecast) {
+      const timePoint = forecastByTime.find((f) => f.time === point.time);
+      if (timePoint) {
+        timePoint.forecast.push(point);
+      } else {
+        forecastByTime.push({
+          time: point.time,
+          forecast: [point],
+        });
+      }
+    }
+
+    return forecastByTime;
   }
 }
