@@ -1,4 +1,6 @@
 import { compare, hash } from 'bcrypt';
+import { sign } from 'jsonwebtoken';
+import config from 'config';
 
 export class AuthService {
   public static async hashPassword(
@@ -13,5 +15,11 @@ export class AuthService {
     hashedPassword: string
   ): Promise<boolean> {
     return await compare(password, hashedPassword);
+  }
+
+  public static generateToken(payload: object): string {
+    return sign(payload, config.get('App.auth.key'), {
+      expiresIn: config.get('App.auth.tokenExpiresIn'),
+    });
   }
 }
