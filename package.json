@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node-dev 'src/index.ts'",
+    "dev": "ts-node-dev --transpile-only 'src/index.ts'",
     "test:functional": "jest --projects ./test --runInBand",
     "test:unit": "jest",
     "start": "yarn build && node dist/src/index.js",
