@@ -44,6 +44,6 @@ jobs:
       if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
       uses: akhileshns/heroku-deploy@v3.12.12
       with:
-        heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
         heroku_app_name: "app-api-forecast"
         heroku_email: "slucivaldo509@gmail.com"
