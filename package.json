@@ -8,7 +8,7 @@
     "dev": "ts-node-dev --transpile-only 'src/index.ts'",
     "test:functional": "jest --projects ./test --runInBand",
     "test:unit": "jest",
-    "start": "yarn build && node dist/src/index.js",
+    "start": "node dist/src/index.js",
     "test": "yarn test:unit && yarn test:functional"
   },
   "keywords": [
