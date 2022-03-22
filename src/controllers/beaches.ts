@@ -1,4 +1,5 @@
 import { ClassMiddleware, Controller, Post } from '@overnightjs/core';
+import logger from '@src/logger';
 import { authMiddleware } from '@src/middlewares/auth';
 import { Beach } from '@src/models/beach';
 import { Request, Response } from 'express';
@@ -20,6 +21,7 @@ export class BeachesController {
       if (err instanceof mongoose.Error.ValidationError) {
         response.status(422).send({ error: err.message });
       } else {
+        logger.error(err);
         response.status(500).send({ error: 'Internal Server Error.' });
       }
     }
