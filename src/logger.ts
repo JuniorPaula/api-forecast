@@ -1,4 +1,5 @@
-import pino from 'pino';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pino = require('pino');
 import config from 'config';
 
 export default pino({
