@@ -1,5 +1,6 @@
-import { ForecastPoint, StormGlass } from '@src/clients/stormGlass';
+import _ from 'lodash';
 import logger from '@src/logger';
+import { ForecastPoint, StormGlass } from '@src/clients/stormGlass';
 import { IBeach } from '@src/models/beach';
 import { InternalError } from '@src/utils/errors/internal-error';
 import { Rating } from './Rating';
@@ -26,22 +27,32 @@ export class Forecast {
   public async processForecastForBeaches(
     beaches: IBeach[]
   ): Promise<ITimeForecast[]> {
-    const poitsWithCorrectSources: IBeachForecast[] = [];
-    logger.info(`Prepering the forecast for ${beaches.length} beaches`);
     try {
-      for (const beach of beaches) {
-        const rating = new this.RatingService(beach);
-        const points = await this.stormGlass.fetchPoints(beach.lat, beach.lng);
-        const enrichedBeachData = this.enrichedBeachData(points, beach, rating);
-
-        poitsWithCorrectSources.push(...enrichedBeachData);
-      }
-
-      return this.mapForecastByTime(poitsWithCorrectSources);
+      const beachForecast = await this.calculateRating(beaches);
+      const timeForecast = this.mapForecastByTime(beachForecast);
+      return timeForecast.map((t) => ({
+        time: t.time,
+        forecast: _.orderBy(t.forecast, ['rating'], ['desc']),
+      }));
     } catch (error) {
       logger.error(error);
       throw new IForecastProcessingInternalError((error as Error).message);
     }
+  }
+
+  private async calculateRating(beaches: IBeach[]): Promise<IBeachForecast[]> {
+    const poitsWithCorrectSources: IBeachForecast[] = [];
+    logger.info(`Prepering the forecast for ${beaches.length} beaches`);
+
+    for (const beach of beaches) {
+      const rating = new this.RatingService(beach);
+      const points = await this.stormGlass.fetchPoints(beach.lat, beach.lng);
+      const enrichedBeachData = this.enrichedBeachData(points, beach, rating);
+
+      poitsWithCorrectSources.push(...enrichedBeachData);
+    }
+
+    return poitsWithCorrectSources;
   }
 
   private enrichedBeachData(
