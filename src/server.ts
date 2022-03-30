@@ -13,6 +13,7 @@ import { OpenAPIV3 } from 'express-openapi-validator/dist/framework/types';
 import { BeachesController } from './controllers/beaches';
 import { UsersController } from './controllers/users';
 import logger from './logger';
+import { apiErrorValidator } from './middlewares/api-error-validator';
 
 export class SetupServer extends Server {
   constructor(private port = 3000) {
@@ -24,6 +25,7 @@ export class SetupServer extends Server {
     await this.docsSetup();
     this.setupControllers();
     await this.databaseSetup();
+    this.setupErrorHandles();
   }
 
   private setupExpress(): void {
@@ -37,6 +39,10 @@ export class SetupServer extends Server {
     const beachesContoller = new BeachesController();
     const userController = new UsersController();
     this.addControllers([forecastController, beachesContoller, userController]);
+  }
+
+  private setupErrorHandles(): void {
+    this.app.use(apiErrorValidator);
   }
 
   private async databaseSetup(): Promise<void> {

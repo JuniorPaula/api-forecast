@@ -34,7 +34,7 @@ describe('Beaches functional tests', () => {
       expect(response.body).toEqual(expect.objectContaining(newBeache));
     });
 
-    it('Should return a validation error', async () => {
+    it('Should return a validation error when a field is invalid', async () => {
       const newBeache = {
         lat: 'invalid_string',
         lng: 151.289824,
@@ -51,8 +51,7 @@ describe('Beaches functional tests', () => {
       expect(response.body).toEqual({
         code: 400,
         error: 'Bad Request',
-        message:
-          'Beach validation failed: lat: Cast to Number failed for value "invalid_string" (type string) at path "lat"',
+        message: 'request.body.lat should be number',
       });
     });
   });
