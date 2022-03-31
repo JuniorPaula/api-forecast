@@ -16,6 +16,9 @@
     "typescript",
     "api"
   ],
+  "engines": {
+    "node": "16.x"
+  },
   "author": "Junior Paula",
   "license": "ISC",
   "devDependencies": {
